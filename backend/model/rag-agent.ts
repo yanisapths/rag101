@@ -15,7 +15,7 @@ const systemPrompt = new SystemMessage(
 );
 
 const retrieve = tool(
-  async ({ query }) => {
+  async ({ query }: { query: string }) => {
     const retrievedDocs = await vectorStore.similaritySearch(query, 2);
     const serialized = retrievedDocs
       .map(
