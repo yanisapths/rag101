@@ -1,7 +1,7 @@
 export type Role = "user" | "assistant";
-
+export type RespType = "api" | "sql" | "text" | "openapi" | "code" | "api_spec";
 export interface UIMessagePart {
-  type: "text";
+  type: RespType;
   text: string;
 }
 
