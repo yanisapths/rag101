@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from "react";
-import { Bot, User, Copy, Check } from "lucide-react";
+import { Bot, User, Copy, Check, FileText } from "lucide-react";
+import Image from "next/image";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,23 @@ export interface SqlPart extends UIMessagePart {
   query?: string;
   reasoning?: string;
 }
-export type UIPart = UIMessagePart | ApiSpecPart | SqlPart;
+export interface ImagePart extends UIMessagePart {
+  type: "image";
+  src: string;
+  name?: string;
+}
+
+export interface FilePart extends UIMessagePart {
+  type: "file";
+  name: string;
+}
+
+export type UIPart =
+  | UIMessagePart
+  | ApiSpecPart
+  | SqlPart
+  | ImagePart
+  | FilePart;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -438,6 +455,29 @@ function MessagePart({ part }: { part: UIPart }) {
   if (part.type === "api_spec")
     return <ApiSpecDisplay part={part as ApiSpecPart} />;
   if (part.type === "sql") return <SqlDisplay part={part as SqlPart} />;
+
+  if (part.type === "image") {
+    const p = part as ImagePart;
+    return (
+      <Image
+        width={240}
+        height={180}
+        src={p.src}
+        alt={p.name ?? "attachment"}
+        className="max-w-[240px] max-h-[180px] rounded-lg object-cover border border-white/20"
+      />
+    );
+  }
+
+  if (part.type === "file") {
+    const p = part as FilePart;
+    return (
+      <div className="flex items-center gap-2 bg-white/10 rounded-lg px-2.5 py-1.5 text-xs">
+        <FileText className="w-3.5 h-3.5 shrink-0" />
+        <span className="truncate max-w-[160px]">{p.name}</span>
+      </div>
+    );
+  }
   if (!part.text) return null;
   return (
     <div className="space-y-1">
@@ -470,7 +510,7 @@ export function ChatMessage({
           "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5 border",
           isUser
             ? "bg-gray-100 border-gray-200"
-            : "bg-violet-50 border-violet-200",
+            : "bg-[#dfdad5]/50 border-[#cac6c1]",
         )}
       >
         {isUser ? (
@@ -489,7 +529,7 @@ export function ChatMessage({
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm",
             isUser
-              ? "bg-violet-600 text-white rounded-tr-sm"
+              ? "bg-[#dfdad5]/50 text-white rounded-tr-sm"
               : "bg-white border border-gray-200 text-gray-800 rounded-tl-sm",
           )}
         >
@@ -498,7 +538,7 @@ export function ChatMessage({
               <MessagePart key={i} part={part as UIPart} />
             ))}
             {isStreaming && (
-              <span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 align-middle animate-pulse rounded" />
+              <span className="inline-block w-0.5 h-4 bg-[#dfdad5]/50 ml-0.5 align-middle animate-pulse rounded" />
             )}
           </div>
         </div>
@@ -510,7 +550,7 @@ export function ChatMessage({
 export function TypingIndicator() {
   return (
     <div className="flex gap-3 px-4 py-4">
-      <div className="w-7 h-7 rounded-full bg-violet-50 border border-violet-200 flex items-center justify-center">
+      <div className="w-7 h-7 rounded-full bg-[#dfdad5]/50 border bg-[#dfdad5] flex items-center justify-center">
         <Bot className="w-3.5 h-3.5 text-violet-500" />
       </div>
       <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10">

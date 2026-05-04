@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { UIMessage, UIPart } from "@/components/chat-message";
+import { Attachment } from "@/components/chat-input";
 
 type Status = "idle" | "submitted" | "streaming" | "error";
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -9,22 +10,50 @@ export const useChat = () => {
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [status, setStatus] = useState<Status>("idle");
 
-  const sendMessage = async ({ text }: { text: string }) => {
+  const sendMessage = async ({
+    text,
+    attachments = [],
+  }: {
+    text: string;
+    attachments?: Attachment[];
+  }) => {
+    const parts: UIPart[] = [];
+
+    if (text) parts.push({ type: "text", text });
+
+    attachments.forEach((att) => {
+      if (att.isImage && att.preview) {
+        parts.push({
+          type: "image",
+          src: att.preview,
+          name: att.file.name,
+          text: "",
+        } as UIPart);
+      } else {
+        parts.push({ type: "file", name: att.file.name, text: "" } as UIPart);
+      }
+    });
+
     const userMessage: UIMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      parts: [{ type: "text", text }],
+      parts,
     };
+
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setStatus("submitted");
 
     try {
+      const formData = new FormData();
+      formData.append("message", text);
+      attachments.forEach((att) => formData.append("files", att.file));
+
       const res = await fetch("http://localhost:5001/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: formData,
       });
+
       const json = await res.json();
       const assistantId = crypto.randomUUID();
 

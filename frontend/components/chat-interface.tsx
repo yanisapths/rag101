@@ -1,7 +1,11 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { ChatInput, sendButtonVariants } from "@/components/chat-input";
+import { useRef, useEffect, useState } from "react";
+import {
+  Attachment,
+  ChatInput,
+  sendButtonVariants,
+} from "@/components/chat-input";
 import { useChat } from "@/hooks/use-chat";
 import { Button } from "./ui/Button";
 import { Code, FileText } from "lucide-react";
@@ -9,8 +13,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChatMessage, TypingIndicator } from "./chat-message";
 
 const onboardingTags = [
-  { icon: <Code size={14} />, message: "SQL query" },
-  { icon: <FileText size={14} />, message: "API Spec" },
+  {
+    icon: <Code size={14} />,
+    message: "SQL query",
+    textInput: "Give me SQL query for",
+  },
+  {
+    icon: <FileText size={14} />,
+    message: "API Spec",
+    textInput: "Give me API specs for",
+  },
 ];
 
 export function ChatInterface() {
@@ -18,10 +30,16 @@ export function ChatInterface() {
   const { messages, sendMessage, status } = useChat();
   const isLoading = status === "streaming" || status === "submitted";
   const hasMessages = messages.length > 0;
+  const [input, setInput] = useState("");
 
-  const handleSend = (text: string) => {
-    if (!text.trim() || isLoading) return;
-    sendMessage({ text });
+  const handleSend = (text: string, attachments: Attachment[]) => {
+    if ((!text.trim() && attachments.length === 0) || isLoading) return;
+    sendMessage({ text, attachments });
+    setInput("");
+  };
+
+  const handlePromptHelpers = (textInput: string) => {
+    setInput(textInput);
   };
 
   useEffect(() => {
@@ -46,7 +64,6 @@ export function ChatInterface() {
               </div>
             ))}
 
-            {/* Typing indicator while waiting for first token */}
             {status === "submitted" && <TypingIndicator />}
 
             <div ref={messagesEndRef} />
@@ -58,7 +75,12 @@ export function ChatInterface() {
             </h1>
 
             <div className="w-full max-w-3xl mb-12">
-              <ChatInput onSend={handleSend} isLoading={isLoading} />
+              <ChatInput
+                onSend={handleSend}
+                isLoading={isLoading}
+                value={input}
+                onChange={setInput}
+              />
             </div>
 
             <div className="flex gap-2">
@@ -70,7 +92,7 @@ export function ChatInterface() {
                   >
                     <Button
                       variant="outline"
-                      onClick={() => handleSend(tag.message)}
+                      onClick={() => handlePromptHelpers(tag.textInput)}
                     >
                       {tag.icon}
                       {tag.message}
@@ -89,6 +111,8 @@ export function ChatInterface() {
             onSend={handleSend}
             isLoading={isLoading}
             placeholder="Write a message..."
+            value={input}
+            onChange={setInput}
           />
         </div>
       )}
