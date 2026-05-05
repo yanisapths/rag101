@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import React from "react";
 
 export const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +13,6 @@ export const geistMono = Geist_Mono({
 
 export const defaultMetadata = (): Metadata => {
   return {
-    title: `Hi Chat`,
+    title: `ไงแชท`,
   };
 };

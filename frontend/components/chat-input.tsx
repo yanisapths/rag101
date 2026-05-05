@@ -4,11 +4,11 @@ import { ArrowUp, PlusIcon, X, FileText } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Button } from "./ui/Button";
 import { useRef, useState, useCallback } from "react";
-
+import Image from "next/image";
 export interface Attachment {
   id: string;
   file: File;
-  preview?: string; // data URL for images
+  preview?: string;
   isImage: boolean;
 }
 
@@ -85,7 +85,6 @@ export function ChatInput({
 
   return (
     <div className="w-full">
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -93,13 +92,11 @@ export function ChatInput({
         accept="image/*,.pdf,.txt,.csv,.docx,.xlsx"
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
-        // Reset so same file can be re-added after removal
         onClick={(e) => ((e.target as HTMLInputElement).value = "")}
       />
 
       <form onSubmit={handleSubmit}>
         <div className="relative rounded-2xl border border-[#716D65]/20 bg-white shadow-[6px_2px_35px_rgba(0,0,0,0.05)] overflow-hidden">
-          {/* Attachment previews */}
           <AnimatePresence>
             {attachments.length > 0 && (
               <motion.div
@@ -118,8 +115,10 @@ export function ChatInput({
                   >
                     {att.isImage ? (
                       <div className="relative rounded-lg overflow-hidden border border-black/10">
-                        <img
-                          src={att.preview}
+                        <Image
+                          width={64}
+                          height={64}
+                          src={att.preview ?? ""}
                           alt={att.file.name}
                           className="w-16 h-16 object-cover block"
                         />
@@ -141,11 +140,10 @@ export function ChatInput({
                       </div>
                     )}
 
-                    {/* Remove button */}
                     <button
                       type="button"
                       onClick={() => removeAttachment(att.id)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-foreground/70 hover:bg-foreground text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="cursor-pointer absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-foreground/70 hover:bg-foreground text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X size={10} strokeWidth={3} />
                     </button>

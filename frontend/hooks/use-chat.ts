@@ -84,6 +84,14 @@ export const useChat = () => {
           componentSchemas: payload.componentSchemas ?? {},
           notes: payload.notes ?? [],
         } as UIPart;
+      } else if (type === "diagram") {
+        part = {
+          type: "diagram",
+          text: "",
+          diagramType: payload.diagramType ?? "sequenceDiagram",
+          title: payload.title ?? "",
+          content: payload.content ?? "",
+        } as UIPart;
       } else {
         part = {
           type: "text",

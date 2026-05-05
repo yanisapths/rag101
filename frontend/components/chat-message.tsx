@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from "react";
-import { Bot, User, Copy, Check, FileText } from "lucide-react";
+import { Bot, User, Copy, Check, FileText, GitBranch } from "lucide-react";
 import Image from "next/image";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -44,11 +44,19 @@ export interface FilePart extends UIMessagePart {
   name: string;
 }
 
+export interface DiagramPart extends UIMessagePart {
+  type: "diagram";
+  diagramType?: string;
+  title?: string;
+  content: string;
+}
+
 export type UIPart =
   | UIMessagePart
   | ApiSpecPart
   | SqlPart
   | ImagePart
+  | FilePart
   | FilePart;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -85,6 +93,27 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
       {copied ? "Copied" : "Copy"}
     </button>
+  );
+}
+
+// ─── Diagram ──────────────────────────────────────────────────────────────────
+
+function DiagramDisplay({ part }: { part: DiagramPart }) {
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden text-sm w-full">
+      <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <GitBranch className="w-3.5 h-3.5 text-violet-500" />
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            {part.title || part.diagramType || "Diagram"}
+          </span>
+        </div>
+        <CopyButton text={part.content} />
+      </div>
+      <pre className="px-3 py-3 text-xs font-mono text-gray-800 overflow-x-auto bg-white whitespace-pre">
+        {part.content}
+      </pre>
+    </div>
   );
 }
 
@@ -452,6 +481,8 @@ function SqlDisplay({ part }: { part: SqlPart }) {
 // ─── Message ──────────────────────────────────────────────────────────────────
 
 function MessagePart({ part }: { part: UIPart }) {
+  if (part.type === "diagram")
+    return <DiagramDisplay part={part as DiagramPart} />;
   if (part.type === "api_spec")
     return <ApiSpecDisplay part={part as ApiSpecPart} />;
   if (part.type === "sql") return <SqlDisplay part={part as SqlPart} />;
@@ -510,11 +541,11 @@ export function ChatMessage({
           "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5 border",
           isUser
             ? "bg-gray-100 border-gray-200"
-            : "bg-[#dfdad5]/50 border-[#cac6c1]",
+            : "bg-violet-50 border-violet-500",
         )}
       >
         {isUser ? (
-          <User className="w-3.5 h-3.5 text-gray-500" />
+          <User className="w-3.5 h-3.5 text-gray-800" />
         ) : (
           <Bot className="w-3.5 h-3.5 text-violet-500" />
         )}
@@ -529,7 +560,7 @@ export function ChatMessage({
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm",
             isUser
-              ? "bg-[#dfdad5]/50 text-white rounded-tr-sm"
+              ? "bg-[#dfdad5]/50 text-gray-800 rounded-tr-sm"
               : "bg-white border border-gray-200 text-gray-800 rounded-tl-sm",
           )}
         >
@@ -550,7 +581,7 @@ export function ChatMessage({
 export function TypingIndicator() {
   return (
     <div className="flex gap-3 px-4 py-4">
-      <div className="w-7 h-7 rounded-full bg-[#dfdad5]/50 border bg-[#dfdad5] flex items-center justify-center">
+      <div className="w-7 h-7 rounded-full bg-violet-50 border border-violet-300 flex items-center justify-center">
         <Bot className="w-3.5 h-3.5 text-violet-500" />
       </div>
       <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10">
